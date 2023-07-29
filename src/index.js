@@ -1,8 +1,10 @@
+import { slice } from "lodash";
 import "./style.css"
 
 //--------------     Model Data      --------------//
 
 let allProjects = [
+  {currentProjectIndex: 1},
   {
     title: 'Inbox',
     array: []  }, 
@@ -127,46 +129,58 @@ const page = {
 const projectListView = {
   init() {
     this.projectListElem = document.getElementById("project-list")
+    this.projectListElem.textContent = '';
     this.render();
   },
 
   render() {
+    let button;
+    let text;
     let elem;
 
     const projects = controller.getProjectList();
     
-    projects.forEach(project => {
-      elem = document.createElement('button')
-      elem.className = '';
-      elem.textContent = project.title;
-      elem.style.cursor = 'pointer';
+    projects.forEach((project, index) => {
 
-      elem.onclick = () => todoItemsView.init(project);
+      button = document.createElement('button')
+      button.className = '';
+      button.style.cursor = 'pointer';
+      button.onclick = () => todoItemsView.init(project);
 
-      this.projectListElem.appendChild(elem);
+      text = document.createElement('span');
+      text.className = ""
+      text.textContent = project.title;
+
+      button.appendChild(text);
+
+      if (index != 0) { 
+      elem = document.createElement('button');
+      elem.className = 'del-button'
+      elem.textContent = "x"
+      elem.onclick = (e) => {
+        e.stopImmediatePropagation();
+        controller.deleteProject(project);
+        controller.init();
+        }
+      button.appendChild(elem);
+      }
+     
+      this.projectListElem.appendChild(button);
     })
-  }
-}
-
-const allTodoItemsView = {
-  init() {
-    this.render();
-  },
-
-  render() {
-    controller.getAllTodoItems().forEach(todoItem => console.log(todoItem))
   }
 }
 
 const todoItemsView = {
   init(project) {
     this.todoItemsElem = document.getElementById("todo-items");
+    this.todoItemsElem.textContent = '';
     this.render(project);
   },
 
   render(project) {
     this.todoItemsElem.textContent = "";
     let elem;
+
     controller.getTodoItems(project).forEach(todoItem => {
       elem = document.createElement('button')
       elem.className = '';
@@ -185,21 +199,19 @@ const todoItemsView = {
 const controller = {
   init() {
 
-    allProjects[0].array = this.getAllTodoItems();
-
-  page.init();
-  projectListView.init();
-  allTodoItemsView.init();
-  todoItemsView.init(allProjects[0]);
+    allProjects[1].array = this.getAllTodoItems();
+    page.init();
+    projectListView.init();
+    todoItemsView.init(allProjects[1]);
   },
 
   getProjectList() {
-    return allProjects;
+    return allProjects.slice(1);
   },
 
   getAllTodoItems() {
     const allTodoItemsArray = [];
-    allProjects.forEach(project => (project.array.forEach(todoItem => allTodoItemsArray.push(todoItem))))
+    allProjects.slice(2).forEach(project => (project.array.forEach(todoItem => allTodoItemsArray.push(todoItem))))
     return allTodoItemsArray;
   },
 
@@ -211,6 +223,12 @@ const controller = {
 
   addNewProject(project) {
     allProjects.push(project);
+  },
+
+  deleteProject(delProject) {
+    let newArray = [];
+    newArray = allProjects.filter(project => project != delProject);
+    allProjects = newArray;
   },
 
   createNewTodo(title, description, dueDate, priority, checklist) {

@@ -2,7 +2,89 @@ import "./style.css"
 
 //--------------     Model Data      --------------//
 
-let allProjects = [];
+let allProjects = [
+  {
+    title: 'Inbox',
+    array: []  }, 
+  {
+    title: 'Default', 
+    array: [
+      {
+        title: "Gym",
+        description: "Workout 5 minutes",
+        dueDate:"30/7/2023",
+        priority: "low",
+        checklist: false,
+      },
+      {
+        title: "Study Physics",
+        description: "Chapter 3: Quantum Physics",
+        dueDate:"1/8/2023",
+        priority: "medium",
+        checklist: false,
+      },
+      {
+        title: "Take out trash",
+        description: "Do this in the morning ASAP",
+        dueDate:"2/8/2023",
+        priority: "high",
+        checklist: false,
+      },
+    ]
+  }, 
+  {
+    title: 'Default 2', 
+    array: [
+      {
+        title: "Gym 2",
+        description: "Workout 5 minutes",
+        dueDate:"30/7/2023",
+        priority: "low",
+        checklist: false,
+      },
+      {
+        title: "Study Physics 2",
+        description: "Chapter 3: Quantum Physics",
+        dueDate:"1/8/2023",
+        priority: "medium",
+        checklist: false,
+      },
+      {
+        title: "Take out trash 2",
+        description: "Do this in the morning ASAP",
+        dueDate:"2/8/2023",
+        priority: "high",
+        checklist: false,
+      },
+    ]
+  }, 
+  {
+    title: 'Default 3', 
+    array: [
+      {
+        title: "Gym 3",
+        description: "Workout 5 minutes",
+        dueDate:"30/7/2023",
+        priority: "low",
+        checklist: false,
+      },
+      {
+        title: "Study Physics 3",
+        description: "Chapter 3: Quantum Physics",
+        dueDate:"1/8/2023",
+        priority: "medium",
+        checklist: false,
+      },
+      {
+        title: "Take out trash 3",
+        description: "Do this in the morning ASAP",
+        dueDate:"2/8/2023",
+        priority: "high",
+        checklist: false,
+      },
+    ]
+  }, 
+];
 
 class Project {
   constructor(title) {
@@ -17,7 +99,7 @@ class TodoItem {
     this.description = description;
     this.dueDate = dueDate;
     this.priority = priority;
-    this.checklist = false;
+    this.checklist = checklist || false;
   }
 }
 
@@ -33,8 +115,11 @@ const page = {
 
   render() {
     document.body.innerHTML = `
-    <div id="project-list"></div>
-    <div id="todo-items"></div>
+    <h1>Todo List</h1>
+    <main class="main-container">
+      <div id="project-list"></div>
+      <div id="todo-items"></div>
+    </main>
     `
   },
 }
@@ -51,10 +136,13 @@ const projectListView = {
     const projects = controller.getProjectList();
     
     projects.forEach(project => {
-      elem = document.createElement('li')
+      elem = document.createElement('button')
       elem.className = '';
-      elem.textContent = project;
+      elem.textContent = project.title;
       elem.style.cursor = 'pointer';
+
+      elem.onclick = () => todoItemsView.init(project);
+
       this.projectListElem.appendChild(elem);
     })
   }
@@ -72,11 +160,20 @@ const allTodoItemsView = {
 
 const todoItemsView = {
   init(project) {
+    this.todoItemsElem = document.getElementById("todo-items");
     this.render(project);
   },
 
   render(project) {
-    controller.getTodoItems(project).forEach(todoItem => console.log(todoItem))
+    this.todoItemsElem.textContent = "";
+    let elem;
+    controller.getTodoItems(project).forEach(todoItem => {
+      elem = document.createElement('button')
+      elem.className = '';
+      elem.textContent = todoItem.title;
+      elem.style.cursor = 'pointer';
+      this.todoItemsElem.appendChild(elem);
+    })
   }
 }
 
@@ -87,30 +184,17 @@ const todoItemsView = {
 
 const controller = {
   init() {
-  //  Create Default Project
-  let defaultTodoProject = new Project("Default");
-  this.addNewProject(defaultTodoProject);
 
-  // Create examples of todo items
-  const gymTodo = new TodoItem("Gym", "Workout 5 minutes", "30/7/2023", "low");
-  const studyTodo = new TodoItem("Study Physics", "Quantum Physic", "1/8/2023", "medium");
-  const trashTodo = new TodoItem("Take out trash", "Do this in the morning ASAP", "2/8/2023", "high");
+    allProjects[0].array = this.getAllTodoItems();
 
-
-  this.addTodoItem(defaultTodoProject, gymTodo);
-  this.addTodoItem(defaultTodoProject, studyTodo);
-  this.addTodoItem(defaultTodoProject, trashTodo);
-
-  page.init()
+  page.init();
   projectListView.init();
   allTodoItemsView.init();
-  todoItemsView.init(defaultTodoProject);
+  todoItemsView.init(allProjects[0]);
   },
 
   getProjectList() {
-    const projectListArray = [];
-    allProjects.forEach(project => projectListArray.push(project.title))
-    return projectListArray;
+    return allProjects;
   },
 
   getAllTodoItems() {
@@ -130,7 +214,7 @@ const controller = {
   },
 
   createNewTodo(title, description, dueDate, priority, checklist) {
-    let newTodo = new TodoItem(title, description, dueDate, checklist);
+    let newTodo = new TodoItem(title, description, dueDate, priority, checklist);
     return newTodo;
   },
 
